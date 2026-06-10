@@ -51,10 +51,21 @@ def save_visit(entry):
         upload_to_hf()
 
 class RedirectHandler(BaseHTTPRequestHandler):
+    def get_client_ip(self):
+        """Récupère l'IP réelle du client (même derrière un proxy)"""
+        # Proxy headers (Cloudflare, Render, etc.)
+        if 'X-Forwarded-For' in self.headers:
+            return self.headers['X-Forwarded-For'].split(',')[0].strip()
+        if 'CF-Connecting-IP' in self.headers:
+            return self.headers['CF-Connecting-IP']
+        
+        # Fallback: IP directe
+        return self.client_address[0]
+    
     def do_GET(self):
         entry = {
             "timestamp":  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            "ip":         self.client_address[0],
+            "ip":         self.get_client_ip(),
             "path":       self.path,
             "user_agent": self.headers.get("User-Agent", "inconnu"),
             "referer":    self.headers.get("Referer", None),

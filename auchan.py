@@ -63,6 +63,14 @@ class RedirectHandler(BaseHTTPRequestHandler):
         return self.client_address[0]
     
     def do_GET(self):
+        # Health check pour UptimeRobot
+        if self.path == "/health":
+            self.send_response(200)
+            self.send_header("Content-type", "text/plain")
+            self.end_headers()
+            self.wfile.write(b"OK")
+            return
+        
         entry = {
             "timestamp":  datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "ip":         self.get_client_ip(),
